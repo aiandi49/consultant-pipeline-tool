@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Job Intake Engine · Lamar Myers Consulting</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root {
+  --cream:#F7F4EE; --warm:#EDE8DF; --stone:#C9BFA8; --ink:#1C1A17; --ink-mid:#4A4640; --ink-mute:#8A837A;
+  --gold:#B8963E; --gold-lt:#D4AC58; --gold-bg:rgba(184,150,62,0.09); --gold-bdr:rgba(184,150,62,0.30);
+  --white:#FFFFFF; --border:rgba(100,90,76,0.14); --border-md:rgba(100,90,76,0.26);
+  --shadow-sm:0 2px 8px rgba(28,26,23,0.07); --shadow-md:0 8px 32px rgba(28,26,23,0.11); --shadow-lg:0 20px 60px rgba(28,26,23,0.16);
+  --r:12px; --green:#2D7A4F; --green-bg:#E8F5EE; --cyan:#1A6B7A; --cyan-bg:rgba(26,107,122,0.08);
+  --magenta:#8B3A62; --magenta-bg:rgba(139,58,98,0.08); --red:#B8453E; --red-bg:rgba(184,69,62,0.08);
+  --card-bg:var(--white); --body-bg:var(--cream);
+}
+html[data-theme="dark"] {
+  --cream:#17150F; --warm:#1F1C15; --stone:#6E6656; --ink:#F3EFE4; --ink-mid:#CFC7B4; --ink-mute:#96907F;
+  --gold:#E0B95B; --gold-lt:#F0CE7C; --gold-bg:rgba(224,185,91,0.10); --gold-bdr:rgba(224,185,91,0.32);
+  --white:#211D15; --border:rgba(224,217,196,0.10); --border-md:rgba(224,217,196,0.18);
+  --shadow-sm:0 2px 10px rgba(0,0,0,.3); --shadow-md:0 10px 34px rgba(0,0,0,.38); --shadow-lg:0 24px 64px rgba(0,0,0,.5);
+  --green:#55C88A; --green-bg:rgba(85,200,138,0.10); --cyan:#4FC1D6; --cyan-bg:rgba(79,193,214,0.10);
+  --magenta:#D97AB0; --magenta-bg:rgba(217,122,176,0.10); --red:#E17870; --red-bg:rgba(225,120,112,0.1);
+  --card-bg:#201C14; --body-bg:#14120D;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--body-bg);color:var(--ink);font-family:'DM Sans',sans-serif;line-height:1.6;transition:background .25s,color .25s;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(184,150,62,.08) 0%, transparent 70%);}
+.page{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 18px 90px;}
+::selection{background:var(--gold);color:var(--white);}
+button{font-family:inherit;}
+input,select,textarea{font-family:'DM Sans',sans-serif;font-size:.86rem;color:var(--ink);background:var(--warm);border:1px solid var(--border-md);border-radius:8px;padding:9px 11px;width:100%;outline:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+label{display:block;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px;}
+textarea{resize:vertical;min-height:64px;}
+
+/* TOGGLE */
+.theme-toggle{position:fixed;top:14px;right:14px;z-index:60;display:flex;align-items:center;gap:8px;background:var(--card-bg);border:1px solid var(--border-md);border-radius:100px;padding:6px 14px 6px 6px;box-shadow:var(--shadow-md);cursor:pointer;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mid);}
+.theme-toggle .dot{width:24px;height:24px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-bdr);display:flex;align-items:center;justify-content:center;font-size:12px;}
+
+/* HERO */
+.hero{padding:34px 0 30px;border-bottom:1px solid var(--border-md);margin-bottom:28px;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:.64rem;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';width:22px;height:1px;background:var(--gold);}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,6.4vw,3.1rem);font-weight:600;line-height:1.06;color:var(--ink);letter-spacing:-.01em;margin-bottom:12px;}
+.hero-title em{color:var(--gold);font-style:italic;font-weight:500;}
+.hero-sub{font-size:.94rem;color:var(--ink-mute);font-style:italic;max-width:64ch;}
+
+/* SCOPE BANNER */
+.scope-banner{display:flex;gap:12px;align-items:flex-start;background:var(--gold-bg);border:1px solid var(--gold-bdr);border-radius:var(--r);padding:14px 18px;margin-bottom:26px;}
+.scope-banner .ic{font-size:16px;flex-shrink:0;}
+.scope-banner p{font-size:.8rem;color:var(--ink-mid);}
+.scope-banner strong{color:var(--ink);}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+.tab{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:9px 18px;border-radius:100px;border:1px solid var(--border-md);background:var(--card-bg);color:var(--ink-mid);cursor:pointer;transition:all .15s;}
+.tab.active{background:var(--gold);border-color:var(--gold);color:var(--white);}
+.tab .cnt{opacity:.7;margin-left:4px;}
+
+/* SECTION LABEL */
+.section-divider{margin:44px 0 18px;padding:16px 20px;background:linear-gradient(90deg,var(--gold-bg),transparent);border-top:2px solid var(--gold);border-radius:0 var(--r) var(--r) 0;display:flex;align-items:center;gap:14px;}
+.section-divider .num{font-family:'DM Mono',monospace;font-size:.64rem;letter-spacing:.3em;color:var(--gold);white-space:nowrap;}
+.section-divider .sep{width:1px;height:22px;background:var(--border-md);}
+.section-divider .title{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:600;color:var(--ink);}
+
+/* FORM CARD */
+.form-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:22px;margin-bottom:22px;}
+.form-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+@media(min-width:680px){.form-grid{grid-template-columns:1fr 1fr;}}
+.form-grid .full{grid-column:1/-1;}
+.check-row{display:flex;flex-wrap:wrap;gap:8px;}
+.check-pill{display:flex;align-items:center;gap:6px;background:var(--warm);border:1px solid var(--border-md);border-radius:100px;padding:6px 12px;font-size:.76rem;color:var(--ink-mid);cursor:pointer;}
+.check-pill input{width:auto;padding:0;}
+.check-pill.active{background:var(--gold-bg);border-color:var(--gold-bdr);color:var(--gold);}
+.btn{font-family:'DM Mono',monospace;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;border:none;padding:10px 20px;border-radius:100px;cursor:pointer;box-shadow:var(--shadow-sm);}
+.btn-gold{background:var(--gold);color:var(--white);}
+.btn-gold:hover{background:var(--gold-lt);}
+.btn-ghost{background:transparent;border:1px solid var(--border-md);color:var(--ink-mid);}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+.btn-red{background:var(--red-bg);border:1px solid var(--red);color:var(--red);}
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
+
+/* HOLDING BIN TABLE */
+.bin-empty{text-align:center;padding:50px 20px;color:var(--ink-mute);font-size:.86rem;border:1px dashed var(--border-md);border-radius:var(--r);}
+.bin-row{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:16px 18px;margin-bottom:12px;}
+.bin-row-top{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:flex-start;}
+.bin-title{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--ink);}
+.bin-meta{font-family:'DM Mono',monospace;font-size:.66rem;color:var(--ink-mute);margin-top:3px;}
+.bin-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.tag{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:100px;background:var(--warm);border:1px solid var(--border-md);color:var(--ink-mid);}
+.tag.gold{background:var(--gold-bg);border-color:var(--gold-bdr);color:var(--gold);}
+.tag.cyan{background:var(--cyan-bg);border-color:rgba(26,107,122,.3);color:var(--cyan);}
+.status-select{width:auto;padding:5px 10px;font-family:'DM Mono',monospace;font-size:.62rem;text-transform:uppercase;}
+.bin-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+
+/* BRIEF PANEL */
+.brief-panel{margin-top:16px;border-top:1px dashed var(--border-md);padding-top:16px;}
+.brief-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+@media(min-width:760px){.brief-grid{grid-template-columns:1fr 1fr;}}
+.brief-block{background:var(--warm);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.brief-block .k{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.brief-block p, .brief-block li{font-size:.82rem;color:var(--ink-mid);}
+.brief-block ul{list-style:none;}
+.brief-block li{padding-left:16px;position:relative;margin-bottom:5px;}
+.brief-block li::before{content:'—';position:absolute;left:0;color:var(--gold);}
+
+/* WATERMARKED PREVIEW */
+.preview-wrap{position:relative;overflow:hidden;border-radius:var(--r);border:1px solid var(--border-md);box-shadow:var(--shadow-md);min-height:220px;background:var(--card-bg);}
+.preview-content{position:relative;z-index:2;padding:22px;}
+.device-mock{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;justify-content:center;padding:20px 0;}
+.mock-browser{width:220px;border-radius:8px;border:1px solid var(--border-md);background:var(--body-bg);overflow:hidden;box-shadow:var(--shadow-sm);}
+.mock-browser .bar{height:20px;background:var(--warm);display:flex;align-items:center;gap:4px;padding:0 8px;}
+.mock-browser .bar span{width:6px;height:6px;border-radius:50%;background:var(--stone);}
+.mock-browser .body{height:130px;background:linear-gradient(160deg,var(--gold-bg),transparent);padding:10px;}
+.mock-browser .ln{height:6px;background:var(--border-md);border-radius:3px;margin-bottom:7px;}
+.mock-phone{width:76px;height:150px;border-radius:14px;border:1px solid var(--border-md);background:var(--body-bg);box-shadow:var(--shadow-sm);padding:8px 6px;}
+.mock-phone .ln{height:5px;background:var(--border-md);border-radius:3px;margin-bottom:6px;}
+.watermark-layer{position:absolute;inset:-40% -20%;z-index:1;display:flex;flex-wrap:wrap;align-content:flex-start;gap:26px 34px;transform:rotate(-32deg);pointer-events:none;}
+.watermark-layer.behind{opacity:.16;}
+.watermark-layer.front{z-index:3;opacity:.20;mix-blend-mode:multiply;}
+html[data-theme="dark"] .watermark-layer.front{mix-blend-mode:screen;opacity:.16;}
+.wm-item{font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);white-space:nowrap;text-shadow:0 1px 0 rgba(255,255,255,.4);}
+html[data-theme="dark"] .wm-item{text-shadow:0 1px 0 rgba(0,0,0,.4);}
+.preview-label{position:absolute;top:10px;left:10px;z-index:4;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:var(--cream);padding:3px 10px;border-radius:100px;}
+
+/* TIMELINE */
+.tl{border-left:2px solid var(--gold-bdr);margin-left:6px;padding-left:20px;margin-top:6px;}
+.tl-item{position:relative;margin-bottom:16px;}
+.tl-item::before{content:'';position:absolute;left:-25px;top:3px;width:10px;height:10px;border-radius:50%;background:var(--gold);border:2px solid var(--warm);}
+.tl-item .w{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);}
+.tl-item h6{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;margin:2px 0 2px;}
+.tl-item p{font-size:.78rem;color:var(--ink-mid);}
+
+/* PRICING */
+.price-callout{display:flex;flex-direction:column;gap:12px;background:linear-gradient(135deg,var(--gold-bg),transparent);border:1px solid var(--gold-bdr);border-radius:10px;padding:18px;}
+@media(min-width:560px){.price-callout{flex-direction:row;align-items:center;justify-content:space-between;}}
+.price-callout .big{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;color:var(--gold);}
+.price-callout .lbl{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute);}
+.deposit-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.deposit-chip{flex:1;min-width:130px;background:var(--card-bg);border:1px solid var(--border-md);border-radius:8px;padding:10px 12px;text-align:center;}
+.deposit-chip .amt{font-family:'DM Mono',monospace;font-size:.95rem;color:var(--gold);font-weight:500;}
+.deposit-chip .lbl2{font-size:.66rem;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+
+.ios-flag{display:flex;gap:10px;align-items:flex-start;background:var(--cyan-bg);border:1px solid rgba(26,107,122,.3);border-radius:10px;padding:12px 14px;margin-top:10px;}
+.ios-flag p{font-size:.78rem;color:var(--ink-mid);}
+.ios-flag strong{color:var(--cyan);}
+.ref-block{border-left:3px solid var(--cyan);background:var(--cyan-bg);}
+.ref-block label{margin-top:8px;}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border-md);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--warm);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:var(--gold-bg);}
+.upload-zone p{font-size:.8rem;color:var(--ink-mute);}
+.upload-zone .hint{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.05em;color:var(--ink-mute);margin-top:6px;}
+.upload-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.upload-chip{display:flex;align-items:center;gap:8px;background:var(--card-bg);border:1px solid var(--border-md);border-radius:100px;padding:6px 12px 6px 6px;font-size:.74rem;color:var(--ink-mid);}
+.upload-chip .thumb{width:22px;height:22px;border-radius:5px;object-fit:cover;background:var(--gold-bg);}
+.upload-chip .x{cursor:pointer;color:var(--red);font-weight:600;margin-left:2px;}
+.upload-chip.warn{border-color:var(--red);color:var(--red);background:var(--red-bg);}
+.extract-preview{margin-top:10px;max-height:120px;overflow-y:auto;background:var(--card-bg);border:1px solid var(--border-md);border-radius:8px;padding:10px 12px;font-size:.76rem;color:var(--ink-mute);white-space:pre-wrap;}
+
+/* RATE CEILING */
+.rate-rule{background:var(--card-bg);border:1px solid var(--border-md);border-radius:8px;padding:12px 14px;margin-top:8px;font-size:.78rem;color:var(--ink-mid);}
+.rate-rule strong{color:var(--gold);}
+
+/* MILESTONE EDITOR */
+.milestone-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.milestone-row input[type=text]{flex:2;}
+.milestone-row input[type=number]{flex:1;}
+.milestone-row .rm{cursor:pointer;color:var(--red);font-family:'DM Mono',monospace;font-size:.7rem;padding:4px 8px;}
+.milestone-sum{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink-mute);margin-top:4px;}
+.milestone-sum.bad{color:var(--red);}
+.milestone-sum.good{color:var(--green);}
+
+.foot{margin-top:60px;padding-top:24px;border-top:1px solid var(--border-md);text-align:center;}
+.foot .name{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:600;color:var(--gold);}
+.foot .role{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute);}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);font-family:'DM Mono',monospace;font-size:.72rem;padding:10px 20px;border-radius:100px;opacity:0;transition:all .25s;z-index:80;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="theme-toggle" onclick="toggleTheme()">
+  <span class="dot" id="themeIcon">🌙</span><span id="themeLabel">Dark mode</span>
+</div>
+
+<div class="page">
+
+  <section class="hero">
+    <div class="hero-eyebrow">Consultant Pipeline Tool</div>
+    <h1 class="hero-title">Job Intake <em>Engine</em></h1>
+    <p class="hero-sub">Drop in a listing's specs — platform, rate, timeframe, stack, target device. It's held in your bin, matched against the industry standard, and turned into a priced, watermarked, delivery-ready brief on demand.</p>
+  </section>
+
+  <div class="scope-banner">
+    <span class="ic">📋</span>
+    <p><strong>Scope: 1099 / contract-basis work only.</strong> Built for Upwork, Fiverr, Craigslist and similar gig-and-project postings. W‑2 employee opportunities run on different math (benefits, tax withholding, no deposit structure) — that needs its own intake, separate from this one.</p>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs" id="tabs"></div>
+
+  <!-- NEW INTAKE FORM -->
+  <div class="section-divider"><span class="num">Intake</span><span class="sep"></span><span class="title">New Job Specs</span></div>
+  <div class="form-card">
+    <label>Drop A Job In — Zip Of Screenshots, Individual Images, Word/Excel/PDF</label>
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <p>Drop a .zip of screenshots, loose images, or a document here — or click to browse</p>
+      <div class="hint">Zips are unpacked automatically. Word/Excel/PDF text is extracted. Screenshots are read directly. HEIC, PPTX, and audio aren't supported yet — convert or paste the text manually.</div>
+      <input type="file" id="fileInput" style="display:none" multiple accept=".zip,.docx,.xlsx,.xls,.csv,.pdf,.jpg,.jpeg,.png,.heic,.pptx" onchange="handleFiles(this.files)"/>
+    </div>
+    <div class="upload-list" id="uploadList"></div>
+    <div class="extract-preview" id="extractPreview" style="display:none;"></div>
+
+    <div class="form-actions" style="justify-content:flex-start;margin-top:14px;">
+      <button class="btn btn-gold" id="autoBtn" onclick="autoProcessUpload()">⚡ Auto-Fill &amp; Add To Bin</button>
+      <span style="font-size:.76rem;color:var(--ink-mute);align-self:center;">Reads the upload, fills every field below, adds it to the bin, and researches a reference — no typing required. Review after and edit anything if needed.</span>
+    </div>
+
+    <div class="form-grid" style="margin-top:22px;border-top:1px dashed var(--border-md);padding-top:18px;">
+      <div class="full" style="margin-bottom:-4px;"><label style="font-size:.6rem;">Manual / Fallback Fields — auto-fill populates these too</label></div>
+      <div><label>Job Title</label><input id="f-title" placeholder="e.g. SaaS UI/UX Designer"/></div>
+      <div><label>Source URL</label><input id="f-url" placeholder="https://www.upwork.com/jobs/..."/></div>
+      <div class="full"><label>Employer Blurb (paste their description)</label><textarea id="f-blurb" placeholder="Paste the job summary / what the employer wrote..."></textarea></div>
+      <div><label>Budget Type</label>
+        <select id="f-budgettype"><option>Hourly</option><option>Fixed</option></select>
+      </div>
+      <div><label>Timeframe</label>
+        <select id="f-timeframe">
+          <option value="lt2w">Less than 2 weeks</option>
+          <option value="2-4w">2–4 weeks</option>
+          <option value="1-3m" selected>1–3 months</option>
+          <option value="3-6m">3–6 months</option>
+          <option value="6m+">6+ months</option>
+        </select>
+      </div>
+      <div><label>Posted Rate Min ($/hr or fixed $)</label><input id="f-ratemin" type="number" placeholder="25"/></div>
+      <div><label>Posted Rate Max ($/hr or fixed $)</label><input id="f-ratemax" type="number" placeholder="90"/></div>
+      <div><label>Est. Hours / Week</label><input id="f-hours" type="number" placeholder="30"/></div>
+      <div>
+        <label>Client's Own Rate Standard (if they quoted one, any unit)</label>
+        <div style="display:flex;gap:8px;">
+          <input id="f-clientrate" type="number" placeholder="e.g. 95" style="flex:1;"/>
+          <select id="f-clientrateunit" style="flex:1;">
+            <option value="hour">per hour</option>
+            <option value="day">per day</option>
+            <option value="week">per week</option>
+            <option value="month">per month</option>
+            <option value="year">per year</option>
+          </select>
+        </div>
+      </div>
+      <div class="full">
+        <div class="rate-rule">💡 <strong>Standing rule, not a hard number:</strong> we never bid below whatever rate ceiling applies — ours or theirs, whichever is higher. If a client states their own standard (any unit above), it's normalized to an hourly equivalent and we bid at least <span id="premiumDisplay">10</span>% over it. Adjust the premium per job here: <input id="f-premium" type="number" value="10" style="display:inline-block;width:64px;padding:4px 8px;margin-left:6px;" onchange="document.getElementById('premiumDisplay').textContent=this.value"/>%</div>
+      </div>
+      <div class="full">
+        <label>Payment Schedule</label>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <label class="check-pill" style="cursor:pointer;"><input type="radio" name="f-schedmode" value="thirds" checked onclick="setScheduleMode('thirds')" style="width:auto;"/> Default: thirds</label>
+          <label class="check-pill" style="cursor:pointer;"><input type="radio" name="f-schedmode" value="custom" onclick="setScheduleMode('custom')" style="width:auto;"/> Custom milestones</label>
+          <label class="check-pill" style="cursor:pointer;"><input type="radio" name="f-schedmode" value="client" onclick="setScheduleMode('client')" style="width:auto;"/> Client's own terms</label>
+        </div>
+        <div id="milestoneEditor"></div>
+        <textarea id="f-clientschedule" placeholder="Paste or describe the client's own payment/scheduling terms here..." style="display:none;"></textarea>
+      </div>
+      <div><label>Stack Required</label>
+        <select id="f-stack">
+          <option>No-Stack (design only)</option>
+          <option>HTML-Only (static)</option>
+          <option>Half-Stack (front-end or back-end only)</option>
+          <option selected>Full-Stack</option>
+        </select>
+      </div>
+      <div class="full"><label>Target Platform(s)</label>
+        <div class="check-row" id="f-targets">
+          <label class="check-pill"><input type="checkbox" value="Web"/> Web</label>
+          <label class="check-pill"><input type="checkbox" value="iOS"/> iOS</label>
+          <label class="check-pill"><input type="checkbox" value="Android"/> Android</label>
+          <label class="check-pill"><input type="checkbox" value="Tablet"/> Tablet</label>
+          <label class="check-pill"><input type="checkbox" value="Backend/API"/> Backend / API</label>
+        </div>
+      </div>
+      <div><label>Deliverable Format</label>
+        <select id="f-deliverable">
+          <option>One-Pager</option>
+          <option>Multi-Page Site</option>
+          <option selected>Full Application</option>
+          <option>Full Repo / Codebase</option>
+        </select>
+      </div>
+      <div><label>Screenshot Notes (paste extracted text)</label><input id="f-screenshot" placeholder="Optional — paste key text pulled from the screenshot"/></div>
+      <div class="full"><label>Additional Notes</label><textarea id="f-notes" placeholder="Anything else worth remembering about this one..."></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+      <button class="btn btn-gold" onclick="addIntake()">Add to Holding Bin</button>
+    </div>
+  </div>
+
+  <!-- HOLDING BIN -->
+  <div class="section-divider"><span class="num">Bin</span><span class="sep"></span><span class="title">Holding Bin</span></div>
+  <div id="bin"></div>
+
+  <div class="foot">
+    <div class="name">Lamar Myers</div>
+    <div class="role">Job Intake Engine · Contract Pipeline Management</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'intake-holding-bin-v1';
+let bin = [];
+let activeTab = 'Upwork';
+const TABS = ['Upwork','Fiverr','Other'];
+const TF_LABEL = {'lt2w':'< 2 weeks','2-4w':'2–4 weeks','1-3m':'1–3 months','3-6m':'3–6 months','6m+':'6+ months'};
+const TF_WEEKS = {'lt2w':1.5,'2-4w':3,'1-3m':8,'3-6m':18,'6m+':30};
+const STATUSES = ['New','Brief Ready','Submitted','Won','Lost'];
+const UNIT_TO_HOURS = {hour:1, day:8, week:40, month:160, year:2080};
+
+let uploadedFiles = [];      // {name, type, extractedText, isPreviewOnly, warn}
+let scheduleMode = 'thirds';
+let milestones = [
+  {label:'Upfront on contract signed', pct:34},
+  {label:'At halfway milestone', pct:33},
+  {label:'On final delivery', pct:33}
+];
+
+function setScheduleMode(mode){
+  scheduleMode = mode;
+  document.getElementById('f-clientschedule').style.display = mode==='client' ? 'block' : 'none';
+  document.getElementById('milestoneEditor').style.display = mode==='client' ? 'none' : 'block';
+  renderMilestoneEditor();
+}
+function addMilestoneRow(){
+  milestones.push({label:'New milestone', pct:0});
+  renderMilestoneEditor();
+}
+function removeMilestoneRow(i){
+  milestones.splice(i,1);
+  renderMilestoneEditor();
+}
+function updateMilestone(i, field, val){
+  milestones[i][field] = field==='pct' ? (parseFloat(val)||0) : val;
+  renderMilestoneEditor(true);
+}
+function renderMilestoneEditor(skipRebuildInputs){
+  const el = document.getElementById('milestoneEditor');
+  if(!skipRebuildInputs){
+    el.innerHTML = milestones.map((m,i)=>`
+      <div class="milestone-row">
+        <input type="text" value="${escapeHtml(m.label)}" onchange="updateMilestone(${i},'label',this.value)"/>
+        <input type="number" value="${m.pct}" onchange="updateMilestone(${i},'pct',this.value)"/><span>%</span>
+        <span class="rm" onclick="removeMilestoneRow(${i})">✕ remove</span>
+      </div>`).join('') + `<button type="button" class="btn btn-ghost" onclick="addMilestoneRow()" style="margin-top:4px;">+ Add Milestone</button>`;
+  }
+  const sum = milestones.reduce((s,m)=>s+(m.pct||0),0);
+  let sumEl = document.getElementById('milestoneSum');
+  if(!sumEl){ el.insertAdjacentHTML('beforeend', `<div class="milestone-sum" id="milestoneSum"></div>`); sumEl = document.getElementById('milestoneSum'); }
+  sumEl.textContent = `Totals ${sum}% of project value`;
+  sumEl.className = 'milestone-sum ' + (sum===100 ? 'good' : 'bad');
+}
+
+/* ---------- DOCUMENT INTAKE PARSING ---------- */
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e=>{
+  e.preventDefault(); dropZone.classList.remove('drag');
+  handleFiles(e.dataTransfer.files);
+});
+
+async function handleFiles(fileList){
+  for(const file of Array.from(fileList)){
+    await handleOneFile(file, file.name);
+  }
+  renderUploadList();
+}
+
+async function handleOneFile(fileLike, displayName){
+  const name = displayName;
+  const ext = name.split('.').pop().toLowerCase();
+
+  if(ext === 'zip'){
+    try{
+      const zip = await JSZip.loadAsync(fileLike);
+      for(const zname of Object.keys(zip.files)){
+        const zentry = zip.files[zname];
+        if(zentry.dir) continue;
+        const shortName = zname.split('/').pop();
+        if(!shortName) continue;
+        const zblob = await zentry.async('blob');
+        await handleOneFile(zblob, shortName);
+      }
+    }catch(err){
+      uploadedFiles.push({name, ext, warn:true, isPreviewOnly:true, extractedText:'(Could not open zip: '+err.message+')'});
+    }
+    return;
+  }
+
+  const entry = {name, ext, extractedText:'', isPreviewOnly:false, warn:false, thumb:null, rawFile:null};
+  try{
+    if(ext === 'docx'){
+      const buf = await fileLike.arrayBuffer();
+      const result = await window.mammoth.extractRawText({arrayBuffer: buf});
+      entry.extractedText = result.value.trim();
+    } else if(ext === 'xlsx' || ext === 'xls' || ext === 'csv'){
+      const buf = await fileLike.arrayBuffer();
+      const wb = XLSX.read(buf, {type:'array'});
+      const sheetName = wb.SheetNames[0];
+      const csv = XLSX.utils.sheet_to_csv(wb.Sheets[sheetName]);
+      entry.extractedText = csv.trim();
+    } else if(ext === 'pdf'){
+      const buf = await fileLike.arrayBuffer();
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+      let text = '';
+      for(let p=1; p<=Math.min(pdf.numPages, 15); p++){
+        const page = await pdf.getPage(p);
+        const content = await page.getTextContent();
+        text += content.items.map(it=>it.str).join(' ') + '\n';
+      }
+      entry.extractedText = text.trim();
+    } else if(['jpg','jpeg','png'].includes(ext)){
+      entry.isPreviewOnly = true;
+      entry.rawFile = fileLike;
+      entry.thumb = URL.createObjectURL(fileLike);
+    } else if(ext === 'heic'){
+      entry.isPreviewOnly = true; entry.warn = true;
+      entry.extractedText = '(HEIC attached — browsers can\'t preview or read HEIC directly. Convert to JPEG/PNG, or paste the relevant text manually.)';
+    } else if(ext === 'pptx'){
+      entry.isPreviewOnly = true; entry.warn = true;
+      entry.extractedText = '(PPTX attached — slide text isn\'t auto-extracted yet. Paste key slide text into the notes field manually.)';
+    } else {
+      entry.isPreviewOnly = true; entry.warn = true;
+      entry.extractedText = '(Unsupported file type for parsing — attached as reference only.)';
+    }
+  } catch(err){
+    entry.warn = true;
+    entry.extractedText = '(Could not parse this file: ' + err.message + ')';
+  }
+  uploadedFiles.push(entry);
+  if(entry.extractedText && !entry.isPreviewOnly){
+    const blurb = document.getElementById('f-blurb');
+    blurb.value = (blurb.value ? blurb.value + '\n\n' : '') + `[from ${name}]\n` + entry.extractedText.slice(0, 4000);
+  }
+}
+
+function fileToBase64(blob){
+  return new Promise((resolve, reject)=>{
+    const r = new FileReader();
+    r.onload = ()=> resolve(r.result.split(',')[1]);
+    r.onerror = reject;
+    r.readAsDataURL(blob);
+  });
+}
+
+function fillFormFromJobData(j){
+  setTab(['Upwork','Fiverr','Other'].includes(j.platform) ? j.platform : 'Other');
+  document.getElementById('f-title').value = j.title || '';
+  document.getElementById('f-url').value = j.url || '';
+  const blurb = document.getElementById('f-blurb');
+  blurb.value = (j.blurb || '') + (blurb.value ? '\n\n---\n' + blurb.value : '');
+  document.getElementById('f-budgettype').value = j.budgetType === 'Fixed' ? 'Fixed' : 'Hourly';
+  document.getElementById('f-timeframe').value = TF_LABEL[j.timeframe] ? j.timeframe : '1-3m';
+  document.getElementById('f-ratemin').value = j.rateMin || '';
+  document.getElementById('f-ratemax').value = j.rateMax || '';
+  document.getElementById('f-hours').value = j.hours || '';
+  const stackOpts = ['No-Stack (design only)','HTML-Only (static)','Half-Stack (front-end or back-end only)','Full-Stack'];
+  document.getElementById('f-stack').value = stackOpts.includes(j.stack) ? j.stack : 'Full-Stack';
+  const deliverOpts = ['One-Pager','Multi-Page Site','Full Application','Full Repo / Codebase'];
+  document.getElementById('f-deliverable').value = deliverOpts.includes(j.deliverable) ? j.deliverable : 'Full Application';
+  document.getElementById('f-notes').value = j.notes || '';
+  document.querySelectorAll('#f-targets input').forEach(cb=>{
+    const on = (j.targets||[]).includes(cb.value);
+    cb.checked = on; cb.parentElement.classList.toggle('active', on);
+  });
+}
+
+async function callClaude(payload){
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  });
+  if(!res.ok) throw new Error('API error ' + res.status);
+  return res.json();
+}
+function extractJsonBlock(text){
+  const match = text.match(/\{[\s\S]*\}/);
+  if(!match) throw new Error('No JSON found in response');
+  return JSON.parse(match[0]);
+}
+
+async function autoProcessUpload(){
+  const btn = document.getElementById('autoBtn');
+  const images = uploadedFiles.filter(f=>f.rawFile && ['jpg','jpeg','png'].includes(f.ext));
+  const textSnippets = uploadedFiles.filter(f=>f.extractedText && !f.isPreviewOnly).map(f=>`[${f.name}]\n${f.extractedText}`);
+  if(images.length===0 && textSnippets.length===0){
+    toast('⚠ Drop a zip, screenshots, or a document first'); return;
+  }
+  images.sort((a,b)=>a.name.localeCompare(b.name));
+  const capped = images.slice(0,8);
+  btn.disabled = true; btn.textContent = '⏳ Reading upload...';
+
+  try{
+    const contentBlocks = [];
+    for(const img of capped){
+      const b64 = await fileToBase64(img.rawFile);
+      const mime = img.ext==='png' ? 'image/png' : 'image/jpeg';
+      contentBlocks.push({type:'image', source:{type:'base64', media_type:mime, data:b64}});
+    }
+    const instruction = `These are screenshots of a job posting from a freelance platform (Upwork/Fiverr/Craigslist/etc), in reading order.${textSnippets.length ? '\nAdditional extracted document text:\n'+textSnippets.join('\n\n') : ''}
+
+Extract the job into strict JSON with exactly these keys and nothing else — no markdown fences, no preamble, JSON only:
+{"platform":"Upwork|Fiverr|Other","title":"","url":"","blurb":"(2-4 sentence summary in your own words of what the employer is asking for)","budgetType":"Hourly|Fixed","timeframe":"lt2w|2-4w|1-3m|3-6m|6m+","rateMin":number,"rateMax":number,"hours":number,"stack":"No-Stack (design only)|HTML-Only (static)|Half-Stack (front-end or back-end only)|Full-Stack","targets":["Web","iOS","Android","Tablet","Backend/API"],"deliverable":"One-Pager|Multi-Page Site|Full Application|Full Repo / Codebase","notes":"(screening questions and any other important requirements, briefly, in your own words)"}
+
+If a value isn't visible, use a reasonable default: rateMin/rateMax/hours → 0 if truly unknown; timeframe → "1-3m"; budgetType → "Hourly"; stack/targets/deliverable → best inference from the description. Respond with ONLY the JSON object.`;
+    contentBlocks.push({type:'text', text: instruction});
+
+    btn.textContent = '🤖 Extracting job details...';
+    const data = await callClaude({model:'claude-sonnet-4-6', max_tokens:1000, messages:[{role:'user', content: contentBlocks}]});
+    const textBlock = (data.content||[]).find(b=>b.type==='text');
+    const jobData = extractJsonBlock(textBlock ? textBlock.text : '{}');
+
+    fillFormFromJobData(jobData);
+    const newJob = addIntake(true);
+    if(!newJob){ btn.disabled=false; btn.textContent='⚡ Auto-Fill & Add To Bin'; return; }
+
+    btn.textContent = '🔍 Researching a comparable example...';
+    try{
+      const refPrompt = `Job title: ${jobData.title}\nJob summary: ${jobData.blurb}\nStack required: ${jobData.stack}\nTarget platforms: ${(jobData.targets||[]).join(', ')}\nDeliverable: ${jobData.deliverable}
+
+Find ONE real, publicly documented example of a designer, developer, or company that has shipped something genuinely comparable to this job — a case study, portfolio writeup, design-system article, or similar public reference. Then write 3-5 concise, numbered recreation steps that combine that example's approach with a standard requirements-to-handoff process for this kind of job.
+
+Respond with ONLY this JSON, no markdown fences, no preamble:
+{"referenceTitle":"","referenceUrl":"","referenceNotes":"(1-2 sentences on why it is comparable)","recreationSteps":"(numbered steps as one string, steps separated by \\n)"}`;
+      const data2 = await callClaude({
+        model:'claude-sonnet-4-6', max_tokens:1200,
+        messages:[{role:'user', content: refPrompt}],
+        tools:[{type:'web_search_20250305', name:'web_search'}]
+      });
+      const textBlocks2 = (data2.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+      const refData = extractJsonBlock(textBlocks2);
+      const job = bin.find(j=>j.id===newJob.id);
+      job.referenceTitle = refData.referenceTitle || '';
+      job.referenceUrl = refData.referenceUrl || '';
+      job.referenceNotes = refData.referenceNotes || '';
+      job.recreationSteps = refData.recreationSteps || '';
+      job.briefOpen = true;
+      await saveBin();
+    } catch(err){
+      console.error('Reference research failed', err);
+      const job = bin.find(j=>j.id===newJob.id);
+      job.briefOpen = true; await saveBin();
+      toast('⚠ Job added — reference research failed, add one manually');
+    }
+
+    renderTabs(); renderBin();
+    document.getElementById('bin').scrollIntoView({behavior:'smooth'});
+    toast('✓ Job fully processed — brief ready below');
+    uploadedFiles = []; renderUploadList();
+  } catch(err){
+    console.error(err);
+    toast('⚠ Auto-processing failed — ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '⚡ Auto-Fill & Add To Bin';
+  }
+}
+
+function renderUploadList(){
+  const list = document.getElementById('uploadList');
+  list.innerHTML = uploadedFiles.map((f,i)=>`
+    <div class="upload-chip ${f.warn?'warn':''}">
+      ${f.thumb ? `<img class="thumb" src="${f.thumb}"/>` : '📄'}
+      <span>${escapeHtml(f.name)}</span>
+      <span class="x" onclick="removeUpload(${i})">✕</span>
+    </div>`).join('');
+  const preview = document.getElementById('extractPreview');
+  const withText = uploadedFiles.filter(f=>f.extractedText);
+  if(withText.length){
+    preview.style.display = 'block';
+    preview.textContent = withText.map(f=>`— ${f.name}: ${f.extractedText.slice(0,300)}${f.extractedText.length>300?'…':''}`).join('\n\n');
+  } else { preview.style.display = 'none'; }
+}
+function removeUpload(i){ uploadedFiles.splice(i,1); renderUploadList(); }
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function toggleTheme(){
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
+  document.getElementById('themeLabel').textContent = isDark ? 'Dark mode' : 'Light mode';
+}
+(function(){
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    document.documentElement.setAttribute('data-theme','dark');
+    document.getElementById('themeIcon').textContent = '☀️';
+    document.getElementById('themeLabel').textContent = 'Light mode';
+  }
+})();
+
+function renderTabs(){
+  const el = document.getElementById('tabs');
+  el.innerHTML = TABS.map(t=>{
+    const cnt = bin.filter(j=>j.platform===t).length;
+    return `<button class="tab ${t===activeTab?'active':''}" onclick="setTab('${t}')">${t} <span class="cnt">(${cnt})</span></button>`;
+  }).join('');
+}
+function setTab(t){ activeTab = t; renderTabs(); renderBin(); }
+
+function clearForm(){
+  ['f-title','f-url','f-blurb','f-ratemin','f-ratemax','f-hours','f-screenshot','f-notes','f-clientrate','f-clientschedule'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-premium').value = 10;
+  document.getElementById('premiumDisplay').textContent = '10';
+  document.querySelectorAll('#f-targets input').forEach(cb=>{cb.checked=false; cb.parentElement.classList.remove('active');});
+  uploadedFiles = []; renderUploadList();
+  milestones = [{label:'Upfront on contract signed', pct:34},{label:'At halfway milestone', pct:33},{label:'On final delivery', pct:33}];
+  scheduleMode = 'thirds';
+  document.querySelector('input[name="f-schedmode"][value="thirds"]').checked = true;
+  document.getElementById('f-clientschedule').style.display = 'none';
+  document.getElementById('milestoneEditor').style.display = 'block';
+  renderMilestoneEditor();
+}
+
+document.addEventListener('change', e=>{
+  if(e.target.matches('#f-targets input')){
+    e.target.parentElement.classList.toggle('active', e.target.checked);
+  }
+});
+
+async function loadBin(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    bin = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ bin = []; }
+  renderTabs(); renderBin();
+}
+async function saveBin(){
+  try{ await window.storage.set(STORAGE_KEY, JSON.stringify(bin), false); }
+  catch(e){ toast('⚠ Could not save — try again'); }
+}
+
+function addIntake(silent){
+  const title = document.getElementById('f-title').value.trim();
+  if(!title){ if(!silent) toast('⚠ Give the job a title first'); return null; }
+  const targets = Array.from(document.querySelectorAll('#f-targets input:checked')).map(cb=>cb.value);
+  const job = {
+    id: 'job_' + Date.now(),
+    createdAt: new Date().toISOString(),
+    platform: activeTab,
+    title,
+    url: document.getElementById('f-url').value.trim(),
+    blurb: document.getElementById('f-blurb').value.trim(),
+    budgetType: document.getElementById('f-budgettype').value,
+    timeframe: document.getElementById('f-timeframe').value,
+    rateMin: parseFloat(document.getElementById('f-ratemin').value) || 0,
+    rateMax: parseFloat(document.getElementById('f-ratemax').value) || 0,
+    hours: parseFloat(document.getElementById('f-hours').value) || 0,
+    stack: document.getElementById('f-stack').value,
+    targets,
+    deliverable: document.getElementById('f-deliverable').value,
+    screenshot: document.getElementById('f-screenshot').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+    clientRate: parseFloat(document.getElementById('f-clientrate').value) || 0,
+    clientRateUnit: document.getElementById('f-clientrateunit').value,
+    premiumPct: parseFloat(document.getElementById('f-premium').value) || 10,
+    scheduleMode: scheduleMode,
+    milestones: JSON.parse(JSON.stringify(milestones)),
+    clientSchedule: document.getElementById('f-clientschedule').value.trim(),
+    uploads: uploadedFiles.map(f=>({name:f.name, warn:f.warn, isPreviewOnly:f.isPreviewOnly})),
+    status: 'New',
+    briefOpen: false
+  };
+  bin.unshift(job);
+  saveBin();
+  if(!silent){ clearForm(); toast('✓ Added to holding bin'); }
+  renderTabs(); renderBin();
+  return job;
+}
+
+function deleteIntake(id){
+  bin = bin.filter(j=>j.id!==id);
+  saveBin(); renderTabs(); renderBin();
+}
+
+function updateStatus(id, status){
+  const job = bin.find(j=>j.id===id);
+  if(job){ job.status = status; saveBin(); }
+}
+
+function toggleBrief(id){
+  const job = bin.find(j=>j.id===id);
+  job.briefOpen = !job.briefOpen;
+  if(job.briefOpen && job.status==='New'){ job.status = 'Brief Ready'; }
+  saveBin(); renderBin();
+}
+
+function watermarkHTML(text, count){
+  let out = '';
+  for(let i=0;i<count;i++){ out += `<span class="wm-item">${text}</span>`; }
+  return out;
+}
+
+function computeMoney(job){
+  const weeks = TF_WEEKS[job.timeframe] || 8;
+  const postedTop = job.rateMax || job.rateMin || 0;
+  const premium = (job.premiumPct != null ? job.premiumPct : 10) / 100;
+
+  // Normalize the client's own stated rate standard to an hourly equivalent, if given.
+  let clientHourly = 0;
+  let ruleApplied = 'posted-range';
+  if(job.clientRate && job.clientRateUnit){
+    clientHourly = job.clientRate / (UNIT_TO_HOURS[job.clientRateUnit] || 1);
+  }
+
+  let effectiveHourly = postedTop;
+  if(clientHourly > postedTop){
+    effectiveHourly = clientHourly * (1 + premium);
+    ruleApplied = 'client-standard+premium';
+  }
+
+  let total;
+  if(job.budgetType === 'Fixed'){
+    total = Math.max(postedTop, clientHourly ? clientHourly*(1+premium) : 0) || postedTop;
+  } else {
+    total = effectiveHourly * (job.hours || 0) * weeks;
+  }
+  return { weeks, top: effectiveHourly, postedTop, clientHourly, total, ruleApplied };
+}
+
+function stackDeliverables(stack){
+  const map = {
+    'No-Stack (design only)': ['User flows & wireframes','High-fidelity Figma UI','Component library, variants + Auto Layout','Developer-ready handoff file'],
+    'HTML-Only (static)': ['Static HTML/CSS/JS build','Responsive across breakpoints','Optimized assets, no framework overhead','Deployed to Vercel/Netlify or handed off as files'],
+    'Half-Stack (front-end or back-end only)': ['One layer built to production quality (FE or BE)','Clear API contract / integration doc for the other side','Tests for the layer delivered','Deployed + repo transferred'],
+    'Full-Stack': ['End-to-end app: UI through database','Auth, persistence, and core business logic wired in','Deployed (Vercel) with CI-ready repo','Full documentation + handoff walkthrough']
+  };
+  return map[stack] || map['Full-Stack'];
+}
+
+function timelinePhases(job){
+  const weeks = TF_WEEKS[job.timeframe] || 8;
+  const phases = [
+    {frac:0.15, name:'Discovery & Audit', desc:'Requirements locked, existing flow/asset audit, scope sign-off.'},
+    {frac:0.35, name:'Structure & System', desc:'Wireframes/architecture and the reusable system (components or schema) built in parallel.'},
+    {frac:0.35, name:'Build & First Deliverable', desc:'Primary flow or feature built to high fidelity — first working deliverable ships here.'},
+    {frac:0.15, name:'Handoff & QA', desc:'Final polish, documentation, deployment, and walkthrough delivered.'}
+  ];
+  let cursor = 0;
+  return phases.map(p=>{
+    const start = Math.round(cursor*10)/10;
+    cursor += p.frac*weeks;
+    const end = Math.round(cursor*10)/10;
+    return {...p, range: weeks<=2 ? `Day ${Math.max(1,Math.round(start*7))}–${Math.round(end*7)}` : `Week ${Math.max(1,Math.round(start))}–${Math.round(end)}`};
+  });
+}
+
+function renderReferenceBlock(job){
+  const has = job.referenceTitle || job.referenceUrl || job.recreationSteps;
+  if(has){
+    return `
+    <div class="brief-block ref-block">
+      <div class="k">🔍 Reference Blueprint — Proven In The Wild</div>
+      <p style="margin-bottom:8px;"><strong style="color:var(--ink)">${escapeHtml(job.referenceTitle||'Untitled reference')}</strong>${job.referenceUrl ? ` — <a href="${escapeHtml(job.referenceUrl)}" target="_blank" style="color:var(--cyan)">${escapeHtml(job.referenceUrl)}</a>` : ''}</p>
+      ${job.referenceNotes ? `<p style="margin-bottom:8px;"><em>Why it's comparable:</em> ${escapeHtml(job.referenceNotes)}</p>` : ''}
+      ${job.recreationSteps ? `<div class="k" style="margin-top:10px;">Steps To Recreate It, Unified With Our Logic</div><p style="white-space:pre-wrap;">${escapeHtml(job.recreationSteps)}</p>` : ''}
+      <button class="btn btn-ghost" style="margin-top:10px;" onclick="editReference('${job.id}')">Edit Reference</button>
+    </div>`;
+  }
+  return `
+  <div class="brief-block ref-block" id="refEdit-${job.id}">
+    <div class="k">🔍 Reference Blueprint — Proven In The Wild</div>
+    <p style="margin-bottom:10px;">Before anything else, every job here should be checked against something that already shipped and worked — pulled from the public work of other designers/developers who've solved this same problem. The engine itself can't browse the web on its own; ask Claude in chat to research a comparable example for this job, then log what it finds below so it becomes part of the brief.</p>
+    <label>Reference Title / Company</label><input id="ref-title-${job.id}" placeholder="e.g. Linear's onboarding flow"/>
+    <label style="margin-top:8px;">Reference URL</label><input id="ref-url-${job.id}" placeholder="https://..."/>
+    <label style="margin-top:8px;">Why It's Comparable</label><textarea id="ref-notes-${job.id}" placeholder="What makes this the right blueprint for this job..."></textarea>
+    <label style="margin-top:8px;">Steps To Recreate It, Unified With Our Logic</label><textarea id="ref-steps-${job.id}" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
+    <button class="btn btn-gold" style="margin-top:10px;" onclick="saveReference('${job.id}')">Save Reference</button>
+  </div>`;
+}
+function editReference(id){
+  const job = bin.find(j=>j.id===id);
+  job.referenceTitle=''; job.referenceUrl=''; job.referenceNotes=''; job.recreationSteps='';
+  saveBin(); renderBin();
+}
+function saveReference(id){
+  const job = bin.find(j=>j.id===id);
+  job.referenceTitle = document.getElementById('ref-title-'+id).value.trim();
+  job.referenceUrl = document.getElementById('ref-url-'+id).value.trim();
+  job.referenceNotes = document.getElementById('ref-notes-'+id).value.trim();
+  job.recreationSteps = document.getElementById('ref-steps-'+id).value.trim();
+  saveBin(); renderBin();
+  toast('✓ Reference logged');
+}
+
+function renderBriefFor(job){
+  const money = computeMoney(job);
+  const {weeks, top, total} = money;
+  const isHourly = job.budgetType === 'Hourly';
+  const deliverables = stackDeliverables(job.stack);
+  const phases = timelinePhases(job);
+  const wmText = `SAMPLE — ${job.title.toUpperCase() || 'PROJECT'} — LMAR MYERS CONSULTING`;
+
+  return `
+  <div class="brief-panel">
+    ${renderReferenceBlock(job)}
+
+    <div class="brief-grid" style="margin-top:12px;">
+      <div class="brief-block">
+        <div class="k">What This Job Is Actually Asking For</div>
+        <p>${job.blurb ? escapeHtml(job.blurb).slice(0,220) + (job.blurb.length>220?'…':'') : 'No employer blurb captured — add one to sharpen this read.'}</p>
+      </div>
+      <div class="brief-block">
+        <div class="k">Matched Deliverable Set — ${escapeHtml(job.stack)}</div>
+        <ul>${deliverables.map(d=>`<li>${d}</li>`).join('')}</ul>
+      </div>
+    </div>
+
+    <div class="brief-block" style="margin-top:12px;">
+      <div class="k">Example Output — Watermarked Preview</div>
+      <div class="preview-wrap">
+        <span class="preview-label">Example · Not Final Asset</span>
+        <div class="watermark-layer behind">${watermarkHTML(wmText, 60)}</div>
+        <div class="preview-content">
+          <div class="device-mock">
+            ${job.targets.includes('Web')||job.targets.length===0 ? `<div class="mock-browser"><div class="bar"><span></span><span></span><span></span></div><div class="body"><div class="ln" style="width:70%"></div><div class="ln" style="width:90%"></div><div class="ln" style="width:55%"></div><div class="ln" style="width:80%"></div></div></div>` : ''}
+            ${job.targets.includes('iOS')||job.targets.includes('Android') ? `<div class="mock-phone"><div class="ln" style="width:80%"></div><div class="ln" style="width:60%"></div><div class="ln" style="width:70%"></div><div class="ln" style="width:50%"></div><div class="ln" style="width:65%"></div></div>` : ''}
+            ${job.targets.includes('Tablet') ? `<div class="mock-browser" style="width:170px;"><div class="bar"><span></span><span></span><span></span></div><div class="body" style="height:200px;"><div class="ln" style="width:60%"></div><div class="ln" style="width:85%"></div></div></div>` : ''}
+          </div>
+        </div>
+        <div class="watermark-layer front">${watermarkHTML(wmText, 60)}</div>
+      </div>
+    </div>
+
+    <div class="brief-block" style="margin-top:12px;">
+      <div class="k">Staggered Timeline — ${TF_LABEL[job.timeframe]}</div>
+      <div class="tl">
+        ${phases.map(p=>`<div class="tl-item"><div class="w">${p.range}</div><h6>${p.name}</h6><p>${p.desc}</p></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="brief-block" style="margin-top:12px;background:transparent;border:none;padding:0;">
+      <div class="price-callout">
+        <div><div class="lbl">Bid At</div><div class="big">${isHourly ? '$'+top.toFixed(0)+'/hr' : '$'+top.toFixed(0)+' fixed'}</div></div>
+        <div><div class="lbl">Est. Project Total</div><div class="big">$${total ? total.toLocaleString(undefined,{maximumFractionDigits:0}) : '—'}</div></div>
+      </div>
+      <div class="rate-rule" style="margin-top:10px;">
+        ${money.ruleApplied === 'client-standard+premium'
+          ? `💡 Client's own rate standard ($${job.clientRate}/${job.clientRateUnit} ≈ $${money.clientHourly.toFixed(0)}/hr) came in <strong>above</strong> the posted range ($${money.postedTop.toFixed(0)}/hr) — bid set to their standard plus a ${job.premiumPct}% premium, never below it.`
+          : `💡 Posted range top ($${money.postedTop.toFixed(0)}${isHourly?'/hr':''}) is the higher of the two available numbers — that's the floor we bid from.`}
+      </div>
+      ${job.scheduleMode === 'client'
+        ? `<div class="rate-rule" style="margin-top:8px;"><strong>Client's own payment terms honored:</strong> ${job.clientSchedule ? escapeHtml(job.clientSchedule) : (isHourly ? 'Hourly contract — platform auto-bills on its normal cycle (e.g. Upwork\'s weekly billing); no separate deposit needed, the rate ceiling above is what protects the price.' : 'No custom terms captured yet — add them on the intake form.')}</div>`
+        : `<div class="deposit-row">${(job.milestones||milestonesDefault()).map(m=>`<div class="deposit-chip"><div class="amt">$${total ? (total*(m.pct/100)).toLocaleString(undefined,{maximumFractionDigits:0}) : '—'}</div><div class="lbl2">${m.pct}% · ${escapeHtml(m.label)}</div></div>`).join('')}</div>`
+      }
+    </div>
+  </div>`;
+}
+function milestonesDefault(){ return [{label:'Upfront on contract signed',pct:34},{label:'At halfway milestone',pct:33},{label:'On final delivery',pct:33}]; }
+
+function escapeHtml(s){
+  const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+}
+
+function renderBin(){
+  const el = document.getElementById('bin');
+  const jobs = bin.filter(j=>j.platform===activeTab);
+  if(jobs.length===0){
+    el.innerHTML = `<div class="bin-empty">No ${activeTab} jobs in the bin yet. Add one above.</div>`;
+    return;
+  }
+  el.innerHTML = jobs.map(job=>{
+    const money = computeMoney(job);
+    const {weeks, top, total} = money;
+    return `
+    <div class="bin-row">
+      <div class="bin-row-top">
+        <div>
+          <div class="bin-title">${escapeHtml(job.title)}</div>
+          <div class="bin-meta">${job.url ? escapeHtml(job.url) : 'No URL captured'} · added ${new Date(job.createdAt).toLocaleDateString()}</div>
+        </div>
+        <select class="status-select" onchange="updateStatus('${job.id}', this.value)">
+          ${STATUSES.map(s=>`<option ${s===job.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="bin-tags">
+        <span class="tag gold">bidding $${top.toFixed(0)}${job.budgetType==='Hourly'?'/hr':' fixed'} ${money.ruleApplied==='client-standard+premium' ? '(their standard +'+job.premiumPct+'%)' : '(top of posted range)'}</span>
+        <span class="tag">${TF_LABEL[job.timeframe]}</span>
+        <span class="tag">${escapeHtml(job.stack)}</span>
+        <span class="tag">${escapeHtml(job.deliverable)}</span>
+        ${job.targets.map(t=>`<span class="tag cyan">${t}</span>`).join('')}
+        <span class="tag">~$${total?total.toLocaleString(undefined,{maximumFractionDigits:0}):'—'} est.</span>
+      </div>
+      <div class="bin-actions">
+        <button class="btn btn-gold" onclick="toggleBrief('${job.id}')">${job.briefOpen ? 'Hide Brief' : 'Generate Brief'}</button>
+        <button class="btn btn-red" onclick="deleteIntake('${job.id}')">Delete</button>
+      </div>
+      ${job.briefOpen ? renderBriefFor(job) : ''}
+    </div>`;
+  }).join('');
+}
+
+renderMilestoneEditor();
+loadBin();
+</script>
+</body>
+</html>
