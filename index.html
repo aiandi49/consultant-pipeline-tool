@@ -11,38 +11,47 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root {
-  --cream:#F7F4EE; --warm:#EDE8DF; --stone:#C9BFA8; --ink:#1C1A17; --ink-mid:#4A4640; --ink-mute:#8A837A;
-  --gold:#B8963E; --gold-lt:#D4AC58; --gold-bg:rgba(184,150,62,0.09); --gold-bdr:rgba(184,150,62,0.30);
-  --white:#FFFFFF; --border:rgba(100,90,76,0.14); --border-md:rgba(100,90,76,0.26);
-  --shadow-sm:0 2px 8px rgba(28,26,23,0.07); --shadow-md:0 8px 32px rgba(28,26,23,0.11); --shadow-lg:0 20px 60px rgba(28,26,23,0.16);
+  --cream:#F3FAF9; --warm:#E7F4F2; --stone:#9FD3CC; --ink:#122421; --ink-mid:#3C5854; --ink-mute:#6C8985;
+  --gold:#0E8B8B; --gold-lt:#2FC4BE; --gold-bg:rgba(14,139,139,0.09); --gold-bdr:rgba(14,139,139,0.30);
+  --white:#FFFFFF; --border:rgba(60,88,84,0.14); --border-md:rgba(60,88,84,0.26);
+  --shadow-sm:0 2px 8px rgba(18,36,33,0.07); --shadow-md:0 8px 32px rgba(18,36,33,0.11); --shadow-lg:0 20px 60px rgba(18,36,33,0.16);
   --r:12px; --green:#2D7A4F; --green-bg:#E8F5EE; --cyan:#1A6B7A; --cyan-bg:rgba(26,107,122,0.08);
   --magenta:#8B3A62; --magenta-bg:rgba(139,58,98,0.08); --red:#B8453E; --red-bg:rgba(184,69,62,0.08);
   --card-bg:var(--white); --body-bg:var(--cream);
 }
 html[data-theme="dark"] {
-  --cream:#17150F; --warm:#1F1C15; --stone:#6E6656; --ink:#F3EFE4; --ink-mid:#CFC7B4; --ink-mute:#96907F;
-  --gold:#E0B95B; --gold-lt:#F0CE7C; --gold-bg:rgba(224,185,91,0.10); --gold-bdr:rgba(224,185,91,0.32);
-  --white:#211D15; --border:rgba(224,217,196,0.10); --border-md:rgba(224,217,196,0.18);
+  --cream:#0B1817; --warm:#122421; --stone:#3E6B65; --ink:#EAF7F5; --ink-mid:#B9D9D4; --ink-mute:#7FA39D;
+  --gold:#3FD9CE; --gold-lt:#6FEAE0; --gold-bg:rgba(63,217,206,0.10); --gold-bdr:rgba(63,217,206,0.32);
+  --white:#132523; --border:rgba(200,235,230,0.10); --border-md:rgba(200,235,230,0.18);
   --shadow-sm:0 2px 10px rgba(0,0,0,.3); --shadow-md:0 10px 34px rgba(0,0,0,.38); --shadow-lg:0 24px 64px rgba(0,0,0,.5);
   --green:#55C88A; --green-bg:rgba(85,200,138,0.10); --cyan:#4FC1D6; --cyan-bg:rgba(79,193,214,0.10);
   --magenta:#D97AB0; --magenta-bg:rgba(217,122,176,0.10); --red:#E17870; --red-bg:rgba(225,120,112,0.1);
-  --card-bg:#201C14; --body-bg:#14120D;
+  --card-bg:#0F1F1D; --body-bg:#081413;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth;font-size:16px;}
+html[data-fontsize="sm"]{font-size:14px;}
+html[data-fontsize="lg"]{font-size:19px;}
 body{background:var(--body-bg);color:var(--ink);font-family:'DM Sans',sans-serif;line-height:1.6;transition:background .25s,color .25s;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(184,150,62,.08) 0%, transparent 70%);}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(14,139,139,.08) 0%, transparent 70%);}
 .page{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 18px 90px;}
 ::selection{background:var(--gold);color:var(--white);}
 button{font-family:inherit;}
-input,select,textarea{font-family:'DM Sans',sans-serif;font-size:.86rem;color:var(--ink);background:var(--warm);border:1px solid var(--border-md);border-radius:8px;padding:9px 11px;width:100%;outline:none;}
+input,select,textarea{font-family:'DM Sans',sans-serif;font-size:.86rem;color:var(--ink);background:var(--warm);border:1px solid var(--border-md);border-radius:8px;padding:9px 11px;width:100%;min-width:0;outline:none;}
 input:focus,select:focus,textarea:focus{border-color:var(--gold);}
 label{display:block;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px;}
 textarea{resize:vertical;min-height:64px;}
 
-/* TOGGLE */
-.theme-toggle{position:fixed;top:14px;right:14px;z-index:60;display:flex;align-items:center;gap:8px;background:var(--card-bg);border:1px solid var(--border-md);border-radius:100px;padding:6px 14px 6px 6px;box-shadow:var(--shadow-md);cursor:pointer;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mid);}
-.theme-toggle .dot{width:24px;height:24px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-bdr);display:flex;align-items:center;justify-content:center;font-size:12px;}
+/* CONTROL BAR: theme + font-size, always present */
+.control-bar{position:fixed;top:12px;right:12px;z-index:60;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 24px);padding-left:12px;}
+.theme-toggle{display:flex;align-items:center;gap:8px;background:var(--card-bg);border:1px solid var(--border-md);border-radius:100px;padding:6px 14px 6px 6px;box-shadow:var(--shadow-md);cursor:pointer;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mid);white-space:nowrap;}
+.theme-toggle .dot{width:24px;height:24px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-bdr);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.fontsize-toggle{display:flex;align-items:center;gap:2px;background:var(--card-bg);border:1px solid var(--border-md);border-radius:100px;padding:4px;box-shadow:var(--shadow-md);}
+.fontsize-toggle button{width:26px;height:26px;border-radius:50%;border:none;background:transparent;color:var(--ink-mute);font-family:'DM Mono',monospace;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.fontsize-toggle button.active{background:var(--gold);color:var(--white);}
+.fontsize-toggle button:nth-child(1){font-size:.62rem;}
+.fontsize-toggle button:nth-child(2){font-size:.78rem;}
+.fontsize-toggle button:nth-child(3){font-size:.92rem;}
 
 /* HERO */
 .hero{padding:34px 0 30px;border-bottom:1px solid var(--border-md);margin-bottom:28px;}
@@ -72,8 +81,9 @@ textarea{resize:vertical;min-height:64px;}
 
 /* FORM CARD */
 .form-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:22px;margin-bottom:22px;}
-.form-grid{display:grid;grid-template-columns:1fr;gap:14px;}
-@media(min-width:680px){.form-grid{grid-template-columns:1fr 1fr;}}
+.form-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;}
+.form-grid>*{min-width:0;}
+@media(min-width:680px){.form-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}}
 .form-grid .full{grid-column:1/-1;}
 .check-row{display:flex;flex-wrap:wrap;gap:8px;}
 .check-pill{display:flex;align-items:center;gap:6px;background:var(--warm);border:1px solid var(--border-md);border-radius:100px;padding:6px 12px;font-size:.76rem;color:var(--ink-mid);cursor:pointer;}
@@ -97,6 +107,8 @@ textarea{resize:vertical;min-height:64px;}
 .tag{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:100px;background:var(--warm);border:1px solid var(--border-md);color:var(--ink-mid);}
 .tag.gold{background:var(--gold-bg);border-color:var(--gold-bdr);color:var(--gold);}
 .tag.cyan{background:var(--cyan-bg);border-color:rgba(26,107,122,.3);color:var(--cyan);}
+.tag.green{background:var(--green-bg);border-color:rgba(45,122,79,.35);color:var(--green);}
+.tag.red{background:var(--red-bg);border-color:rgba(184,69,62,.35);color:var(--red);}
 .status-select{width:auto;padding:5px 10px;font-family:'DM Mono',monospace;font-size:.62rem;text-transform:uppercase;}
 .bin-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
 
@@ -148,6 +160,33 @@ html[data-theme="dark"] .wm-item{text-shadow:0 1px 0 rgba(0,0,0,.4);}
 .deposit-chip .amt{font-family:'DM Mono',monospace;font-size:.95rem;color:var(--gold);font-weight:500;}
 .deposit-chip .lbl2{font-size:.66rem;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
 
+/* FIT READ */
+.fit-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:baseline;justify-content:space-between;}
+.fit-band{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;}
+.fit-band.green{color:var(--green);} .fit-band.gold{color:var(--gold);} .fit-band.cyan{color:var(--cyan);} .fit-band.red{color:var(--red);}
+.fit-score{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--ink-mute);}
+.fit-meter{height:6px;border-radius:100px;background:var(--border-md);overflow:hidden;margin:10px 0;}
+.fit-meter-fill{height:100%;border-radius:100px;}
+.fit-meter-fill.green{background:var(--green);} .fit-meter-fill.gold{background:var(--gold);} .fit-meter-fill.cyan{background:var(--cyan);} .fit-meter-fill.red{background:var(--red);}
+.fit-skills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.fit-repos{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.fit-repos a{font-size:.78rem;color:var(--cyan);text-decoration:none;}
+.fit-repos a:hover{text-decoration:underline;}
+.fit-repos .rn{color:var(--ink-mid);font-size:.78rem;}
+
+/* WHO/WHAT/WHEN/WHERE/WHY */
+.pipeline-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px;}
+@media(min-width:760px){.pipeline-grid{grid-template-columns:1fr 1fr;}}
+.pipeline-item{background:var(--card-bg);border:1px solid var(--border-md);border-radius:10px;padding:12px 14px;}
+.pipeline-item .k{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:5px;}
+.pipeline-item p{font-size:.8rem;color:var(--ink-mid);}
+
+/* PROPOSAL */
+.proposal-box{background:var(--warm);border:1px dashed var(--border-md);border-radius:10px;padding:14px 16px;margin-top:12px;white-space:pre-wrap;font-size:.8rem;color:var(--ink-mid);max-height:280px;overflow-y:auto;}
+.copy-row{display:flex;justify-content:flex-end;margin-top:10px;}
+.copy-btn{font-family:'DM Mono',monospace;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;border:none;padding:10px 20px;border-radius:100px;cursor:pointer;background:var(--gold);color:var(--white);box-shadow:var(--shadow-sm);}
+.copy-btn.copied{background:var(--green);}
+
 .ios-flag{display:flex;gap:10px;align-items:flex-start;background:var(--cyan-bg);border:1px solid rgba(26,107,122,.3);border-radius:10px;padding:12px 14px;margin-top:10px;}
 .ios-flag p{font-size:.78rem;color:var(--ink-mid);}
 .ios-flag strong{color:var(--cyan);}
@@ -188,8 +227,15 @@ html[data-theme="dark"] .wm-item{text-shadow:0 1px 0 rgba(0,0,0,.4);}
 </head>
 <body>
 
-<div class="theme-toggle" onclick="toggleTheme()">
-  <span class="dot" id="themeIcon">🌙</span><span id="themeLabel">Dark mode</span>
+<div class="control-bar">
+  <div class="fontsize-toggle" role="group" aria-label="Text size">
+    <button id="fs-sm" onclick="setFontSize('sm')" aria-label="Small text">A</button>
+    <button id="fs-md" onclick="setFontSize('md')" aria-label="Medium text">A</button>
+    <button id="fs-lg" onclick="setFontSize('lg')" aria-label="Large text">A</button>
+  </div>
+  <div class="theme-toggle" onclick="toggleTheme()">
+    <span class="dot" id="themeIcon">🌙</span><span id="themeLabel">Dark mode</span>
+  </div>
 </div>
 
 <div class="page">
@@ -263,7 +309,7 @@ html[data-theme="dark"] .wm-item{text-shadow:0 1px 0 rgba(0,0,0,.4);}
       </div>
       <div class="full">
         <label>Payment Schedule</label>
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
           <label class="check-pill" style="cursor:pointer;"><input type="radio" name="f-schedmode" value="thirds" checked onclick="setScheduleMode('thirds')" style="width:auto;"/> Default: thirds</label>
           <label class="check-pill" style="cursor:pointer;"><input type="radio" name="f-schedmode" value="custom" onclick="setScheduleMode('custom')" style="width:auto;"/> Custom milestones</label>
           <label class="check-pill" style="cursor:pointer;"><input type="radio" name="f-schedmode" value="client" onclick="setScheduleMode('client')" style="width:auto;"/> Client's own terms</label>
@@ -326,6 +372,56 @@ const TF_LABEL = {'lt2w':'< 2 weeks','2-4w':'2–4 weeks','1-3m':'1–3 months',
 const TF_WEEKS = {'lt2w':1.5,'2-4w':3,'1-3m':8,'3-6m':18,'6m+':30};
 const STATUSES = ['New','Brief Ready','Submitted','Won','Lost'];
 const UNIT_TO_HOURS = {hour:1, day:8, week:40, month:160, year:2080};
+
+/* ---------- FIT ENGINE — matched against Lamar Myers' real skill set + shipped work ---------- */
+const SKILL_CATEGORIES = {
+  'Web & Design':  {kw:['ui','ux','design','figma','website','web design','landing','wireframe','component','design system','branding','brand','responsive','front-end','frontend','html','css','react','javascript','typescript','wordpress','shopify','webflow'], weight:1},
+  'Programming':   {kw:['javascript','typescript','python','node','node.js','api','backend','back-end','database','sql','rust','automation','script','integration'], weight:1},
+  'AI / ML':       {kw:['ai','artificial intelligence','chatbot','llm','gpt','claude','machine learning','ml','nlp','automation agent','ai agent','tensorflow','prompt'], weight:1.1},
+  'Blockchain':    {kw:['blockchain','smart contract','solidity','web3','nft','dapp','token','ethereum','crypto','defi'], weight:1.1},
+  'Marketing':     {kw:['marketing','social media','content','copywriting','seo','email campaign','brand strategy','funnel','ads','growth'], weight:0.85},
+  'Full Delivery': {kw:['full stack','full-stack','end to end','end-to-end','mvp','saas','app','application','deploy','vercel','launch','build from scratch'], weight:1}
+};
+const PORTFOLIO = [
+  {name:'Archer Memorial AME Zion', url:'https://archer-memorial-ame-zion.vercel.app/', tags:['Web & Design','Full Delivery'], note:'full church website with a built-in photo-restoration tool'},
+  {name:'AI&I — Brand Infrastructure', url:'https://ai-and-i-brand.vercel.app/', tags:['Marketing','Web & Design','Full Delivery'], note:'brand strategy + rollout system for a supplement line, identity through launch'},
+  {name:'AI&I ATLAS — Shop the Lineup', url:'https://ai-and-i-brand.vercel.app/funnel.html', tags:['Full Delivery','Marketing','Web & Design'], note:'live storefront with checkout, run end to end'},
+  {name:'The Long Way Round', url:'https://amtrak-travel-hub.vercel.app/', tags:['Web & Design','Marketing'], note:'independent research-driven content build and comparison guide'},
+  {name:'Village Inn — Digital Menu', url:'https://village-inn-menu.vercel.app/', tags:['Web & Design','Full Delivery'], note:'mobile-first rebuild with structured data (allergens, calories) across sections'},
+  {name:'Blackjack Reversal', url:'https://blackjack-reversal.vercel.app/', tags:['Programming','Full Delivery'], note:'original browser-based game logic built from scratch'},
+  {name:'AI&I Atlas — Field Intelligence', url:'https://artlist-intelligence-guide.vercel.app/', tags:['AI / ML','Marketing'], note:'structured competitive research used as a live build spec'},
+  {name:'The Family Press', url:'https://family-press-rho.vercel.app/', tags:['Web & Design'], note:'keepsake feature site, custom layout work for two creators'}
+];
+const GITHUB_URL = 'https://github.com/momf49';
+
+function computeFit(job){
+  const text = [job.title, job.blurb, job.notes, job.stack, job.deliverable, (job.targets||[]).join(' ')]
+    .filter(Boolean).join(' ').toLowerCase();
+  let score = 0, matchedSkills = [], matchedCats = [];
+  Object.entries(SKILL_CATEGORIES).forEach(([cat, def])=>{
+    const hits = def.kw.filter(k=>text.includes(k));
+    if(hits.length){
+      matchedCats.push(cat);
+      matchedSkills.push(...hits.slice(0,3));
+      score += Math.min(hits.length, 4) * 9 * def.weight;
+    }
+  });
+  // Stack-level & deliverable clarity bonus — a well-specified job is easier to price and win.
+  if(job.stack) score += 6;
+  if(job.rateMax || job.rateMin) score += 6;
+  if(job.deliverable) score += 4;
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  let band, color, verdict;
+  if(score >= 62){ band='Strong Fit'; color='green'; verdict='Squarely in the skill set — bid with confidence.'; }
+  else if(score >= 38){ band='Good Fit'; color='gold'; verdict='Solid overlap — worth a tailored proposal.'; }
+  else if(score >= 18){ band='Stretch Fit'; color='cyan'; verdict='Partial overlap — doable, but lean on the reference blueprint to close the gap.'; }
+  else { band='Poor Fit'; color='red'; verdict='Thin overlap with the current skill set and portfolio — vet carefully before bidding.'; }
+
+  const uniqueSkills = [...new Set(matchedSkills)].slice(0,6);
+  const matchedRepos = PORTFOLIO.filter(p=>p.tags.some(t=>matchedCats.includes(t))).slice(0,3);
+  return {score, band, color, verdict, matchedCats, matchedSkills:uniqueSkills, matchedRepos};
+}
 
 let uploadedFiles = [];      // {name, type, extractedText, isPreviewOnly, warn}
 let scheduleMode = 'thirds';
@@ -598,20 +694,44 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
-function toggleTheme(){
-  const html = document.documentElement;
-  const isDark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
-  document.getElementById('themeLabel').textContent = isDark ? 'Dark mode' : 'Light mode';
+const UI_PREFS_KEY = 'ui-prefs-v1';
+function applyTheme(isDark){
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = isDark ? 'Light mode' : 'Dark mode';
 }
-(function(){
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
-    document.documentElement.setAttribute('data-theme','dark');
-    document.getElementById('themeIcon').textContent = '☀️';
-    document.getElementById('themeLabel').textContent = 'Light mode';
-  }
-})();
+function applyFontSize(size){
+  document.documentElement.setAttribute('data-fontsize', size);
+  ['sm','md','lg'].forEach(s=>document.getElementById('fs-'+s).classList.toggle('active', s===size));
+}
+function toggleTheme(){
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  applyTheme(!isDark);
+  saveUiPrefs();
+}
+function setFontSize(size){
+  applyFontSize(size);
+  saveUiPrefs();
+}
+async function saveUiPrefs(){
+  try{
+    await window.storage.set(UI_PREFS_KEY, JSON.stringify({
+      theme: document.documentElement.getAttribute('data-theme'),
+      fontsize: document.documentElement.getAttribute('data-fontsize')
+    }), false);
+  }catch(e){ /* non-fatal */ }
+}
+async function loadUiPrefs(){
+  // Defaults: light theme, medium text — always, unless the user has chosen otherwise before.
+  let prefs = {theme:'light', fontsize:'md'};
+  try{
+    const res = await window.storage.get(UI_PREFS_KEY, false);
+    if(res && res.value) prefs = {...prefs, ...JSON.parse(res.value)};
+  }catch(e){ /* first run — use defaults */ }
+  applyTheme(prefs.theme === 'dark');
+  applyFontSize(prefs.fontsize === 'sm' || prefs.fontsize === 'lg' ? prefs.fontsize : 'md');
+}
+loadUiPrefs();
 
 function renderTabs(){
   const el = document.getElementById('tabs');
@@ -807,16 +927,127 @@ function saveReference(id){
   toast('✓ Reference logged');
 }
 
+function whoIsThisFor(job){
+  const blurbBit = job.blurb ? job.blurb.split(/[.!?]/)[0].trim() : '';
+  const base = blurbBit ? `A client operating around: "${blurbBit.slice(0,140)}${blurbBit.length>140?'…':''}"` : `A ${job.platform} client posting under "${job.title||'this listing'}."`;
+  const teamSize = job.budgetType==='Hourly' && (job.hours||0)>=30 ? ' Sized like an ongoing, near full-time engagement, not a one-off.' : '';
+  return `${base}${teamSize}`;
+}
+function whatAreWeDoing(job, deliverables){
+  return `${job.deliverable||'A scoped deliverable'} on a ${job.stack||'matched'} build${(job.targets&&job.targets.length)?', targeting '+job.targets.join(', '):''}. Concretely: ${deliverables.slice(0,3).join('; ')}.`;
+}
+function whenDoWeDeliver(job, phases, weeks){
+  const unit = weeks<=2 ? 'days' : 'weeks';
+  const span = weeks<=2 ? Math.round(weeks*7) : weeks;
+  return `${phases.length} stages over ${span} ${unit} — ${phases.map(p=>p.name).join(' → ')}. First working deliverable lands at the close of stage 3.`;
+}
+function whereDoWeDeliver(job){
+  if(job.stack === 'No-Stack (design only)'){
+    return `A Figma file, shared directly with edit or view access as you choose — component library and dev-handoff annotations included.`;
+  }
+  if(job.stack === 'HTML-Only (static)'){
+    return `A clean file bundle or static repo, deployed to Vercel/Netlify for live review, then handed off (files or repo transfer) on final payment.`;
+  }
+  return `A private GitHub repository transferred to your account (or added as collaborator), deployed live to Vercel at every milestone so you're never reviewing a black box — full docs included at handoff.`;
+}
+function whyAreWeBest(fit){
+  const catLine = fit.matchedCats.length ? `direct experience across ${fit.matchedCats.join(', ')}` : `broad, cross-disciplinary delivery experience`;
+  const repoLine = fit.matchedRepos.length
+    ? ` Comparable receipts: ${fit.matchedRepos.map(r=>r.name+' ('+r.note+')').join('; ')}.`
+    : ` 800+ repositories shipped across web, AI, and blockchain builds back the estimate.`;
+  return `${catLine}, drawn from a working catalog of 800+ repositories — most freelancers on this listing are bidding on a title, this bid is backed by shipped, comparable work.${repoLine}`;
+}
+function renderPipelineBlock(job, fit, deliverables, phases, weeks){
+  return `
+  <div class="brief-block" style="margin-top:12px;">
+    <div class="k">The Full Pipeline — Who / What / When / Where / Why</div>
+    <div class="pipeline-grid">
+      <div class="pipeline-item"><div class="k">Who This Is For</div><p>${escapeHtml(whoIsThisFor(job))}</p></div>
+      <div class="pipeline-item"><div class="k">What We're Doing</div><p>${escapeHtml(whatAreWeDoing(job, deliverables))}</p></div>
+      <div class="pipeline-item"><div class="k">When We Deliver</div><p>${escapeHtml(whenDoWeDeliver(job, phases, weeks))}</p></div>
+      <div class="pipeline-item"><div class="k">Where We Deliver It</div><p>${escapeHtml(whereDoWeDeliver(job))}</p></div>
+      <div class="pipeline-item full" style="grid-column:1/-1;"><div class="k">Why We're The Best Fit</div><p>${escapeHtml(whyAreWeBest(fit))}</p></div>
+    </div>
+  </div>`;
+}
+function renderFitBlock(job, fit){
+  return `
+  <div class="brief-block" style="margin-top:12px;">
+    <div class="fit-head">
+      <span class="fit-band ${fit.color}">${fit.band}</span>
+      <span class="fit-score">${fit.score}/100 · matched against Lamar Myers' skill set + portfolio</span>
+    </div>
+    <div class="fit-meter"><div class="fit-meter-fill ${fit.color}" style="width:${fit.score}%;"></div></div>
+    <p>${escapeHtml(fit.verdict)}</p>
+    ${fit.matchedSkills.length ? `<div class="fit-skills">${fit.matchedSkills.map(s=>`<span class="tag">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
+    ${fit.matchedRepos.length ? `<div class="fit-repos">${fit.matchedRepos.map(r=>`<div><a href="${r.url}" target="_blank">${escapeHtml(r.name)} ↗</a> <span class="rn">— ${escapeHtml(r.note)}</span></div>`).join('')}</div>` : `<div class="fit-repos"><span class="rn">No direct portfolio overlap detected — full catalog: <a href="${GITHUB_URL}" target="_blank">${GITHUB_URL}</a></span></div>`}
+  </div>`;
+}
+function buildProposalText(job, fit, money, phases, weeks){
+  const isHourly = job.budgetType === 'Hourly';
+  const rateLine = isHourly ? `$${money.top.toFixed(0)}/hr` : `$${money.top.toFixed(0)} fixed`;
+  const depositLine = job.scheduleMode === 'client'
+    ? (job.clientSchedule || 'Billed on your standard cycle.')
+    : (job.milestones||milestonesDefault()).map(m=>`${m.pct}% ${m.label}`).join(' · ');
+  return `Hi — thanks for posting this. Quick read on fit and how I'd run it:
+
+WHO THIS IS FOR
+${whoIsThisFor(job)}
+
+WHAT I'D DELIVER
+${whatAreWeDoing(job, stackDeliverables(job.stack))}
+
+WHEN
+${whenDoWeDeliver(job, phases, weeks)}
+
+WHERE
+${whereDoWeDeliver(job)}
+
+WHY ME
+${whyAreWeBest(fit)}
+
+RATE & TERMS
+${rateLine} · Est. project total ${money.total ? '$'+money.total.toLocaleString(undefined,{maximumFractionDigits:0}) : 'TBD on scope confirmation'}
+Payment: ${depositLine}
+
+Happy to hop on a quick call to lock scope before kickoff. — Lamar Myers`;
+}
+function copyProposal(id){
+  const job = bin.find(j=>j.id===id);
+  if(!job) return;
+  const money = computeMoney(job);
+  const fit = computeFit(job);
+  const phases = timelinePhases(job);
+  const weeks = TF_WEEKS[job.timeframe] || 8;
+  const text = buildProposalText(job, fit, money, phases, weeks);
+  navigator.clipboard.writeText(text).then(()=>{
+    toast('✓ Proposal copied to clipboard');
+    const btn = document.getElementById('copyBtn-'+id);
+    if(btn){ btn.classList.add('copied'); btn.textContent='✓ Copied'; setTimeout(()=>{btn.classList.remove('copied'); btn.textContent='Copy Proposal Text';},1800); }
+  }).catch(()=> toast('⚠ Could not copy — select the text manually'));
+}
+function renderProposalBlock(job, fit, money, phases, weeks){
+  const text = buildProposalText(job, fit, money, phases, weeks);
+  return `
+  <div class="brief-block" style="margin-top:12px;">
+    <div class="k">Ready-To-Paste Proposal</div>
+    <div class="proposal-box">${escapeHtml(text)}</div>
+    <div class="copy-row"><button class="copy-btn" id="copyBtn-${job.id}" onclick="copyProposal('${job.id}')">Copy Proposal Text</button></div>
+  </div>`;
+}
+
 function renderBriefFor(job){
   const money = computeMoney(job);
   const {weeks, top, total} = money;
   const isHourly = job.budgetType === 'Hourly';
   const deliverables = stackDeliverables(job.stack);
   const phases = timelinePhases(job);
-  const wmText = `SAMPLE — ${job.title.toUpperCase() || 'PROJECT'} — LMAR MYERS CONSULTING`;
+  const fit = computeFit(job);
+  const wmText = `SAMPLE — ${job.title.toUpperCase() || 'PROJECT'} — LAMAR MYERS CONSULTING`;
 
   return `
   <div class="brief-panel">
+    ${renderFitBlock(job, fit)}
     ${renderReferenceBlock(job)}
 
     <div class="brief-grid" style="margin-top:12px;">
@@ -868,6 +1099,9 @@ function renderBriefFor(job){
         : `<div class="deposit-row">${(job.milestones||milestonesDefault()).map(m=>`<div class="deposit-chip"><div class="amt">$${total ? (total*(m.pct/100)).toLocaleString(undefined,{maximumFractionDigits:0}) : '—'}</div><div class="lbl2">${m.pct}% · ${escapeHtml(m.label)}</div></div>`).join('')}</div>`
       }
     </div>
+
+    ${renderPipelineBlock(job, fit, deliverables, phases, weeks)}
+    ${renderProposalBlock(job, fit, money, phases, weeks)}
   </div>`;
 }
 function milestonesDefault(){ return [{label:'Upfront on contract signed',pct:34},{label:'At halfway milestone',pct:33},{label:'On final delivery',pct:33}]; }
@@ -898,6 +1132,7 @@ function renderBin(){
         </select>
       </div>
       <div class="bin-tags">
+        <span class="tag ${computeFit(job).color}">${computeFit(job).band} · ${computeFit(job).score}/100</span>
         <span class="tag gold">bidding $${top.toFixed(0)}${job.budgetType==='Hourly'?'/hr':' fixed'} ${money.ruleApplied==='client-standard+premium' ? '(their standard +'+job.premiumPct+'%)' : '(top of posted range)'}</span>
         <span class="tag">${TF_LABEL[job.timeframe]}</span>
         <span class="tag">${escapeHtml(job.stack)}</span>
