@@ -405,6 +405,39 @@ html[data-theme="dark"] .wm-item{text-shadow:0 1px 0 rgba(0,0,0,.4);}
 <div class="toast" id="toast"></div>
 
 <script>
+/* ---------- STANDALONE-DEPLOYMENT STORAGE SHIM ----------
+   When this file runs inside a Claude.ai preview, window.storage is
+   already provided by the host and this block does nothing.
+   When this file runs as a real deployed site (GitHub Pages / Vercel),
+   window.storage does not exist, so this shim recreates the same
+   get/set/delete/list API on top of localStorage — same calling code,
+   zero changes needed anywhere else in this file. Data stays on this
+   device/browser only; there is no cross-device sync in this mode. */
+if (typeof window.storage === 'undefined') {
+  window.storage = {
+    async get(key, shared){
+      const raw = localStorage.getItem((shared?'shared:':'local:')+key);
+      return raw === null ? null : {key, value: raw, shared: !!shared};
+    },
+    async set(key, value, shared){
+      localStorage.setItem((shared?'shared:':'local:')+key, value);
+      return {key, value, shared: !!shared};
+    },
+    async delete(key, shared){
+      localStorage.removeItem((shared?'shared:':'local:')+key);
+      return {key, deleted:true, shared: !!shared};
+    },
+    async list(prefix, shared){
+      const ns = shared?'shared:':'local:';
+      const keys = Object.keys(localStorage)
+        .filter(k=>k.startsWith(ns+(prefix||'')))
+        .map(k=>k.slice(ns.length));
+      return {keys, prefix, shared: !!shared};
+    }
+  };
+}
+</script>
+<script>
 const STORAGE_KEY = 'intake-holding-bin-v1';
 let bin = [];
 let activeTab = 'Upwork';
@@ -695,7 +728,7 @@ function fillFormFromJobData(j){
 }
 
 async function callClaude(payload){
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('/api/claude', {
     method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
   });
   if(!res.ok) throw new Error('API error ' + res.status);
